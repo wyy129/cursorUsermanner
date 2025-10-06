@@ -36,6 +36,14 @@
       @query-stripe="handleQueryStripeForUser"
     />
     
+    <!-- Stripe订阅信息模态框 -->
+    <StripeInfoModal 
+      v-if="showStripeModal"
+      :stripe-data="stripeData"
+      :email="currentUserEmail"
+      @close="showStripeModal = false"
+    />
+    
     <!-- 文本导入模态框 -->
     <TextImportModal 
       v-if="showTextImportModal"
@@ -54,6 +62,7 @@ import StatsDisplay from './components/StatsDisplay.vue'
 import DataTable from './components/DataTable.vue'
 import EmptyState from './components/EmptyState.vue'
 import TokenModal from './components/TokenModal.vue'
+import StripeInfoModal from './components/StripeInfoModal.vue'
 import TextImportModal from './components/TextImportModal.vue'
 import { showMessage } from './utils/message'
 import { queryUserStripeInfo } from './utils/api'
@@ -64,7 +73,10 @@ const filteredData = ref([])
 const searchTerm = ref('')
 const showModal = ref(false)
 const showTextImportModal = ref(false)
+const showStripeModal = ref(false)
 const selectedUser = ref(null)
+const stripeData = ref({})
+const currentUserEmail = ref('')
 
 // 计算属性：有效Token数量
 const validTokenCount = computed(() => {
@@ -160,13 +172,26 @@ const handleQueryStripe = async (user) => {
       showMessage('✅ 查询成功！', 'success')
       console.log('Stripe信息:', result.data)
       
-      // 格式化显示查询结果
-      const info = result.data
-      const formatted = JSON.stringify(info, null, 2)
+      // 更新用户数据（添加Stripe信息）
+      const userIndex = userData.value.findIndex(u => u.email === user.email)
+      if (userIndex !== -1) {
+        userData.value[userIndex] = {
+          ...userData.value[userIndex],
+          membershipType: result.data.membershipType || result.data.individualMembershipType,
+          daysRemainingOnTrial: result.data.daysRemainingOnTrial,
+          stripeInfo: result.data
+        }
+        // 同步更新filteredData
+        const filteredIndex = filteredData.value.findIndex(u => u.email === user.email)
+        if (filteredIndex !== -1) {
+          filteredData.value[filteredIndex] = userData.value[userIndex]
+        }
+      }
       
-      // 创建一个更好的显示方式
-      const message = `📊 Cursor Stripe 信息\n\n用户: ${user.email}\n\n${formatted}`
-      alert(message)
+      // 显示Stripe信息模态框
+      stripeData.value = result.data
+      currentUserEmail.value = user.email
+      showStripeModal.value = true
     } else {
       showMessage('❌ 查询失败: ' + result.error, 'error')
       console.error('查询失败详情:', result)
@@ -198,12 +223,31 @@ const handleQueryStripeForUser = async (token) => {
       showMessage('✅ 查询成功！', 'success')
       console.log('Stripe信息:', result.data)
       
-      // 格式化显示查询结果
-      const info = result.data
-      const formatted = JSON.stringify(info, null, 2)
+      // 更新selectedUser的数据
+      if (selectedUser.value) {
+        selectedUser.value = {
+          ...selectedUser.value,
+          membershipType: result.data.membershipType || result.data.individualMembershipType,
+          daysRemainingOnTrial: result.data.daysRemainingOnTrial,
+          stripeInfo: result.data
+        }
+        
+        // 同步更新userData和filteredData
+        const userIndex = userData.value.findIndex(u => u.email === selectedUser.value.email)
+        if (userIndex !== -1) {
+          userData.value[userIndex] = selectedUser.value
+          const filteredIndex = filteredData.value.findIndex(u => u.email === selectedUser.value.email)
+          if (filteredIndex !== -1) {
+            filteredData.value[filteredIndex] = selectedUser.value
+          }
+        }
+      }
       
-      const message = `📊 Cursor Stripe 信息\n\n${formatted}`
-      alert(message)
+      // 显示Stripe信息模态框
+      stripeData.value = result.data
+      currentUserEmail.value = selectedUser.value?.email || 'N/A'
+      showStripeModal.value = true
+      showModal.value = false  // 关闭Token详情模态框
     } else {
       showMessage('❌ 查询失败: ' + result.error, 'error')
       console.error('查询失败详情:', result)
