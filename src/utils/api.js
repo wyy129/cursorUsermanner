@@ -34,7 +34,8 @@ function getApiUrl() {
 export async function queryUserStripeInfo(token) {
   try {
     const apiUrl = getApiUrl()
-    console.log('使用API地址:', apiUrl)
+    console.log('请求地址:', apiUrl)
+    console.log('Token长度:', token.length, '前缀:', token.substring(0, 15))
     
     const response = await fetch(apiUrl, {
       method: 'GET',
@@ -46,11 +47,22 @@ export async function queryUserStripeInfo(token) {
       credentials: 'include'
     })
     
+    console.log('响应状态:', response.status, response.statusText)
+    
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      // 尝试获取错误详情
+      const errorData = await response.json().catch(() => ({ error: '无法解析错误响应' }))
+      console.error('API错误响应:', errorData)
+      
+      return { 
+        success: false, 
+        error: `HTTP ${response.status}: ${errorData.error || response.statusText}`,
+        details: errorData
+      }
     }
     
     const data = await response.json()
+    console.log('成功获取数据:', data)
     return { success: true, data }
     
   } catch (error) {

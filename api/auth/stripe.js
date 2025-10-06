@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log(`[API] 处理请求，Token前10位: ${token.substring(0, 10)}...`);
+    console.log(`[API] 处理请求，Token长度: ${token.length}, 前缀: ${token.substring(0, 15)}...`);
 
     // 转发请求到Cursor API（使用原生fetch，Vercel运行时支持）
     const response = await fetch('https://www.cursor.com/api/auth/stripe', {
@@ -56,19 +56,29 @@ export default async function handler(req, res) {
     });
 
     console.log(`[API] Cursor API响应: ${response.status}`);
+    const responseText = await response.text();
+    console.log(`[API] 响应内容: ${responseText.substring(0, 300)}`);
 
     // 返回响应
     if (!response.ok) {
-      const errorText = await response.text();
       return res.status(response.status).json({
-        error: `Cursor API返回错误: ${response.status}`,
-        details: errorText.substring(0, 200)
+        error: `Cursor API返回 ${response.status}`,
+        details: responseText.substring(0, 200),
+        hint: response.status === 401 ? 'Token可能无效或已过期，请检查Token是否正确' : '请求失败'
       });
     }
 
-    const data = await response.json();
-    
-    return res.status(200).json(data);
+    // 尝试解析JSON
+    try {
+      const data = JSON.parse(responseText);
+      return res.status(200).json(data);
+    } catch (e) {
+      // 如果不是JSON，返回原始文本
+      return res.status(200).json({
+        raw: responseText,
+        note: '响应不是JSON格式'
+      });
+    }
 
   } catch (error) {
     console.error('[API] 错误:', error);

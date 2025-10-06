@@ -145,6 +145,12 @@ const handleQueryStripe = async (user) => {
     return
   }
   
+  // 验证Token格式
+  if (!token.startsWith('user_')) {
+    showMessage('⚠️ Token格式可能不正确（应以user_开头）', 'warning')
+  }
+  
+  console.log('发送Token到API:', token.substring(0, 15) + '...')
   showMessage('正在查询Cursor Stripe信息...', 'info')
   
   try {
@@ -164,6 +170,11 @@ const handleQueryStripe = async (user) => {
     } else {
       showMessage('❌ 查询失败: ' + result.error, 'error')
       console.error('查询失败详情:', result)
+      
+      // 如果是401错误，给出更具体的提示
+      if (result.error.includes('401')) {
+        alert('Token验证失败 (401):\n\n可能原因：\n1. Token已过期\n2. Token格式不正确\n3. 该Token已被撤销\n\n建议：从Cursor应用重新获取Token')
+      }
     }
   } catch (error) {
     showMessage('查询出错: ' + error.message, 'error')

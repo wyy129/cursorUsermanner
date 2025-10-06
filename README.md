@@ -253,24 +253,23 @@ cursor-user-manager/
 
 ## 🐛 常见问题
 
-### Q: 点击"查询Stripe"后显示504超时
+### Q: 点击"查询Stripe"后显示401 Unauthorized
 
-**A:** 可能的原因：
-1. **Token无效或过期** - 获取新的Token
-2. **Cursor API响应慢** - 等待30秒，已自动增加超时时间
-3. **网络问题** - 检查HF Spaces日志
+**A:** 这说明Token无效或已过期。
 
-**测试Token是否有效：**
+**验证Token：**
 ```bash
-# 本地测试
-python test_api.py "你的Token"
-
-# 或使用curl
+# 使用curl直接测试Cursor API
 curl "https://www.cursor.com/api/auth/stripe" \
   -H "Cookie: WorkosCursorSessionToken=你的Token"
 ```
 
-详细调试步骤请查看 [DEBUG.md](./DEBUG.md)
+如果返回401，说明Token确实无效，需要：
+1. 重新登录Cursor应用
+2. 从Cursor存储中获取新Token
+3. 更新JSON数据
+
+**详细指南：** [TOKEN_TEST.md](./TOKEN_TEST.md)
 
 ### Q: 如何获取WorkosCursorSessionToken？
 
