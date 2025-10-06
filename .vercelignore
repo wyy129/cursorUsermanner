@@ -1,0 +1,14 @@
+node_modules
+.git
+.vscode
+.idea
+*.log
+.DS_Store
+*.pyc
+__pycache__
+app.py
+requirements.txt
+Dockerfile
+.dockerignore
+test_api.py
+
