@@ -1,375 +1,105 @@
+<!-- {{RIPER-6:
+  Action: "Added"
+  Task_ID: "#2"
+  Timestamp: "2025-10-07T00:02:59+08:00"
+  Authoring_Role: "frontend-expert"
+  Principle_Applied: "组件化设计，职责清晰分离"
+  MCP_Tools_Used: ["mcp.server_time"]
+}} -->
+
 <template>
   <div class="app-container">
     <AppHeader />
     
-    <div class="controls">
-      <ImportControls 
-        @import-file="handleFileImport"
-        @import-text="handleTextImport"
-      />
-      
-      <SearchBox 
-        v-model="searchTerm"
-        @search="handleSearch"
-      />
-      
-      <StatsDisplay 
-        :total-count="filteredData.length"
-        :valid-token-count="validTokenCount"
-      />
-      
-      <button class="btn btn-secondary" @click="showTokenTester = !showTokenTester">
-        {{ showTokenTester ? '🔽 隐藏测试工具' : '🔬 显示Token测试工具' }}
-      </button>
-    </div>
-
-    <!-- Token 测试工具 -->
-    <TokenTester v-if="showTokenTester" />
-    
-    <!-- 实时请求监控器 -->
-    <RequestMonitor />
-
-    <DataTable 
-      v-if="filteredData.length > 0"
-      :data="filteredData"
-      @show-details="handleShowDetails"
-      @query-stripe="handleQueryStripe"
-    />
-    
-    <EmptyState v-else />
-
-    <!-- Token详情模态框 -->
-    <TokenModal 
-      v-if="showModal"
-      :user-data="selectedUser"
-      @close="showModal = false"
-      @query-stripe="handleQueryStripeForUser"
-    />
-    
-    <!-- Stripe订阅信息模态框 -->
-    <StripeInfoModal 
-      v-if="showStripeModal"
-      :stripe-data="stripeData"
-      :email="currentUserEmail"
-      @close="showStripeModal = false"
-    />
-    
-    <!-- 文本导入模态框 -->
-    <TextImportModal 
-      v-if="showTextImportModal"
-      @import="handleTextDataImport"
-      @close="showTextImportModal = false"
-    />
+    <main class="main-content">
+      <div class="container">
+        <!-- 统计面板 -->
+        <StatsDisplay :stats="stats" />
+        
+        <!-- 导入控制区 -->
+        <ImportControls @import="handleImport" />
+        
+        <!-- Token 查询工具 -->
+        <TokenChecker />
+        
+        <!-- 搜索框 -->
+        <SearchBox v-model="searchQuery" />
+        
+        <!-- 数据表格 -->
+        <DataTable 
+          v-if="filteredUsers.length > 0"
+          :users="filteredUsers" 
+        />
+        
+        <!-- 空状态 -->
+        <EmptyState v-else :hasData="users.length > 0" />
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import AppHeader from './components/AppHeader.vue'
-import ImportControls from './components/ImportControls.vue'
-import SearchBox from './components/SearchBox.vue'
 import StatsDisplay from './components/StatsDisplay.vue'
+import ImportControls from './components/ImportControls.vue'
+import TokenChecker from './components/TokenChecker.vue'
+import SearchBox from './components/SearchBox.vue'
 import DataTable from './components/DataTable.vue'
 import EmptyState from './components/EmptyState.vue'
-import TokenModal from './components/TokenModal.vue'
-import StripeInfoModal from './components/StripeInfoModal.vue'
-import TextImportModal from './components/TextImportModal.vue'
-import TokenTester from './components/TokenTester.vue'
-import RequestMonitor from './components/RequestMonitor.vue'
-import { showMessage } from './utils/message'
-import { queryUserStripeInfo } from './utils/api'
 
 // 数据状态
-const userData = ref([])
-const filteredData = ref([])
-const searchTerm = ref('')
-const showModal = ref(false)
-const showTextImportModal = ref(false)
-const showStripeModal = ref(false)
-const showTokenTester = ref(false)
-const selectedUser = ref(null)
-const stripeData = ref({})
-const currentUserEmail = ref('')
+const users = ref([])
+const searchQuery = ref('')
 
-// 计算属性：有效Token数量
-const validTokenCount = computed(() => {
-  return filteredData.value.filter(item => 
-    item.auth_info?.WorkosCursorSessionToken && item.tokenValidity !== false
-  ).length
+// 统计数据
+const stats = computed(() => ({
+  total: users.value.length,
+  pro: users.value.filter(u => u.membershipType === 'pro').length,
+  valid: users.value.filter(u => u.tokenValidity).length,
+  trial: users.value.filter(u => u.daysRemainingOnTrial !== null && u.daysRemainingOnTrial > 0).length
+}))
+
+// 过滤后的用户
+const filteredUsers = computed(() => {
+  if (!searchQuery.value.trim()) return users.value
+  
+  const query = searchQuery.value.toLowerCase()
+  return users.value.filter(user => 
+    user.email?.toLowerCase().includes(query) ||
+    user.membershipType?.toLowerCase().includes(query) ||
+    user.system_type?.toLowerCase().includes(query)
+  )
 })
 
-// 处理文件导入
-const handleFileImport = (file) => {
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    try {
-      const data = JSON.parse(e.target.result)
-      loadData(data)
-    } catch (error) {
-      showMessage('JSON解析失败：' + error.message, 'error')
-      console.error('解析错误:', error)
-    }
-  }
-  reader.readAsText(file)
-}
-
-// 处理文本导入按钮点击
-const handleTextImport = () => {
-  showTextImportModal.value = true
-}
-
-// 处理文本数据导入
-const handleTextDataImport = (jsonText) => {
+// 导入数据
+const handleImport = (data) => {
   try {
-    const data = JSON.parse(jsonText)
-    loadData(data)
-    showTextImportModal.value = false
-  } catch (error) {
-    showMessage('JSON格式错误：' + error.message, 'error')
-    console.error('解析错误:', error)
-  }
-}
-
-// 加载数据
-const loadData = (data) => {
-  if (!Array.isArray(data)) {
-    throw new Error('数据格式不正确，应为数组格式')
-  }
-  
-  userData.value = data
-  filteredData.value = [...data]
-  showMessage(`数据加载成功！共 ${data.length} 条记录`, 'success')
-}
-
-// 搜索功能
-const handleSearch = () => {
-  const term = searchTerm.value.toLowerCase().trim()
-  
-  if (!term) {
-    filteredData.value = [...userData.value]
-  } else {
-    filteredData.value = userData.value.filter(item => {
-      const email = (item.email || '').toLowerCase()
-      return email.includes(term)
-    })
-  }
-}
-
-// 显示详情
-const handleShowDetails = (user) => {
-  selectedUser.value = user
-  showModal.value = true
-}
-
-// 查询Stripe信息（从表格）
-const handleQueryStripe = async (user) => {
-  const token = user.auth_info?.WorkosCursorSessionToken
-  
-  if (!token) {
-    showMessage('该用户没有WorkosCursorSessionToken', 'warning')
-    return
-  }
-  
-  // 验证Token格式
-  if (!token.startsWith('user_')) {
-    showMessage('⚠️ Token格式可能不正确（应以user_开头）', 'warning')
-  }
-  
-  console.log('发送Token到API:', token.substring(0, 15) + '...')
-  showMessage('正在查询Cursor Stripe信息...', 'info')
-  
-  try {
-    const result = await queryUserStripeInfo(token)
-    
-    if (result.success) {
-      showMessage('✅ 查询成功！', 'success')
-      console.log('Stripe信息:', result.data)
-      
-      // 更新用户数据（添加Stripe信息）
-      const userIndex = userData.value.findIndex(u => u.email === user.email)
-      if (userIndex !== -1) {
-        userData.value[userIndex] = {
-          ...userData.value[userIndex],
-          membershipType: result.data.membershipType || result.data.individualMembershipType,
-          daysRemainingOnTrial: result.data.daysRemainingOnTrial,
-          stripeInfo: result.data
-        }
-        // 同步更新filteredData
-        const filteredIndex = filteredData.value.findIndex(u => u.email === user.email)
-        if (filteredIndex !== -1) {
-          filteredData.value[filteredIndex] = userData.value[userIndex]
-        }
-      }
-      
-      // 显示Stripe信息模态框
-      stripeData.value = result.data
-      currentUserEmail.value = user.email
-      showStripeModal.value = true
+    if (Array.isArray(data)) {
+      users.value = data
     } else {
-      showMessage('❌ 查询失败: ' + result.error, 'error')
-      console.error('查询失败详情:', result)
-      
-      // 显示详细的错误信息
-      let errorMessage = `查询失败 (${result.error})\n\n`
-      
-      if (result.details) {
-        errorMessage += '📋 服务器返回:\n'
-        errorMessage += JSON.stringify(result.details, null, 2) + '\n\n'
-        
-        if (result.details.debug) {
-          errorMessage += '🔍 调试信息:\n'
-          errorMessage += `Token前缀: ${result.details.debug.tokenPrefix || 'N/A'}\n`
-          errorMessage += `Token长度: ${result.details.debug.tokenLength || 'N/A'}\n`
-          errorMessage += `完整响应: ${result.details.debug.fullResponse || 'N/A'}\n\n`
-        }
-      }
-      
-      if (result.error.includes('401')) {
-        errorMessage += '⚠️ 可能原因：\n'
-        errorMessage += '1. Token已过期或无效\n'
-        errorMessage += '2. Token格式不正确（应以user_开头）\n'
-        errorMessage += '3. 该Token已被撤销\n\n'
-        errorMessage += '💡 解决方法：\n'
-        errorMessage += '从Cursor应用重新获取最新的Token\n\n'
-        errorMessage += '📝 如何获取Token：\n'
-        errorMessage += '1. 打开Cursor应用\n'
-        errorMessage += '2. 按F12打开开发者工具\n'
-        errorMessage += '3. 点击Application/存储\n'
-        errorMessage += '4. 找到Cookies > WorkosCursorSessionToken'
-      }
-      
-      alert(errorMessage)
+      alert('导入数据格式错误，请确保是 JSON 数组格式')
     }
   } catch (error) {
-    showMessage('查询出错: ' + error.message, 'error')
-    console.error('查询异常:', error)
-  }
-}
-
-// 查询Stripe信息（从详情页）
-const handleQueryStripeForUser = async (token) => {
-  if (!token) {
-    showMessage('没有可查询的Token', 'warning')
-    return
-  }
-  
-  showMessage('正在查询Cursor Stripe信息...', 'info')
-  
-  try {
-    const result = await queryUserStripeInfo(token)
-    
-    if (result.success) {
-      showMessage('✅ 查询成功！', 'success')
-      console.log('Stripe信息:', result.data)
-      
-      // 更新selectedUser的数据
-      if (selectedUser.value) {
-        selectedUser.value = {
-          ...selectedUser.value,
-          membershipType: result.data.membershipType || result.data.individualMembershipType,
-          daysRemainingOnTrial: result.data.daysRemainingOnTrial,
-          stripeInfo: result.data
-        }
-        
-        // 同步更新userData和filteredData
-        const userIndex = userData.value.findIndex(u => u.email === selectedUser.value.email)
-        if (userIndex !== -1) {
-          userData.value[userIndex] = selectedUser.value
-          const filteredIndex = filteredData.value.findIndex(u => u.email === selectedUser.value.email)
-          if (filteredIndex !== -1) {
-            filteredData.value[filteredIndex] = selectedUser.value
-          }
-        }
-      }
-      
-      // 显示Stripe信息模态框
-      stripeData.value = result.data
-      currentUserEmail.value = selectedUser.value?.email || 'N/A'
-      showStripeModal.value = true
-      showModal.value = false  // 关闭Token详情模态框
-    } else {
-      showMessage('❌ 查询失败: ' + result.error, 'error')
-      console.error('查询失败详情:', result)
-    }
-  } catch (error) {
-    showMessage('查询出错: ' + error.message, 'error')
-    console.error('查询异常:', error)
+    alert('导入失败：' + error.message)
   }
 }
 </script>
 
 <style scoped>
 .app-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.main-content {
+  padding: 2rem 0;
+}
+
+.container {
   max-width: 1400px;
   margin: 0 auto;
-  background: var(--card-bg);
-  border-radius: 16px;
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-}
-
-.controls {
-  padding: 1.5rem 2rem;
-  background: var(--bg-color);
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-success {
-  background: var(--success-color);
-  color: white;
-}
-
-.btn-success:hover:not(:disabled) {
-  background: #059669;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
-.btn-secondary {
-  background: #94a3b8;
-  color: white;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #64748b;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
-.btn-small {
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-}
-
-@media (max-width: 768px) {
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
+  padding: 0 1rem;
 }
 </style>
 

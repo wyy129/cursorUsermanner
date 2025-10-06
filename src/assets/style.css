@@ -1,93 +1,125 @@
 /* {{RIPER-6:
   Action: "Added"
-  Task_ID: "#VUE-004"
-  Timestamp: "2025-10-05T14:00:00Z"
-  Authoring_Role: "PM"
-  Principle_Applied: "现代化UI设计，响应式布局"
-  Quality_Check: "全局样式和CSS变量定义"
-  MCP_Tools_Used: ["write"]
+  Task_ID: "#5"
+  Timestamp: "2025-10-07T00:02:59+08:00"
+  Authoring_Role: "frontend-expert"
+  Principle_Applied: "现代化响应式设计"
+  MCP_Tools_Used: ["mcp.server_time"]
 }} */
 
+/* 全局样式重置 */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-:root {
-  --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
-  --bg-color: #f8fafc;
-  --card-bg: #ffffff;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --border-color: #e2e8f0;
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-}
-
+/* 全局字体和基础样式 */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  padding: 2rem;
-  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  line-height: 1.6;
+  color: #2d3748;
+  background: #f7fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-#app {
-  width: 100%;
-}
-
-/* 滚动条美化 */
+/* 滚动条样式 */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-color);
+  background: #f1f1f1;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
-
-/* 消息动画 */
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideOut {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
+  background: linear-gradient(135deg, #5568d3 0%, #65408b 100%);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  body {
-    padding: 1rem;
+  .container {
+    padding: 0 0.5rem !important;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .control-actions {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .data-table {
+    font-size: 0.75rem;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem;
   }
 }
 
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 通用工具类 */
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+.p-3 { padding: 1.5rem; }
+.p-4 { padding: 2rem; }
+
+/* 打印样式 */
+@media print {
+  .control-actions,
+  .search-box,
+  .btn-action {
+    display: none !important;
+  }
+  
+  .app-container {
+    background: white !important;
+  }
+}
 

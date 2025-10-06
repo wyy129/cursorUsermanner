@@ -1,49 +1,95 @@
+<!-- 搜索框组件 -->
 <template>
   <div class="search-box">
-    <input 
-      type="text" 
-      :value="modelValue"
-      placeholder="🔍 搜索邮箱..."
-      @input="handleInput"
-    >
+    <div class="search-input-wrapper">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <input
+        type="text"
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
+        placeholder="搜索邮箱、会员类型、系统类型..."
+        class="search-input"
+      >
+      <button v-if="modelValue" class="clear-btn" @click="$emit('update:modelValue', '')">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
   modelValue: {
     type: String,
     default: ''
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'search'])
-
-const handleInput = (event) => {
-  emit('update:modelValue', event.target.value)
-  emit('search')
-}
+defineEmits(['update:modelValue'])
 </script>
 
 <style scoped>
 .search-box {
-  flex: 1 1 300px;
+  margin-bottom: 2rem;
 }
 
-.search-box input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
+.search-input-wrapper {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
 }
 
-.search-box input:focus {
+.search-icon {
+  width: 20px;
+  height: 20px;
+  color: #718096;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  padding: 1rem;
+  font-size: 1rem;
+  color: #1a202c;
+}
+
+.search-input::placeholder {
+  color: #a0aec0;
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.clear-btn svg {
+  width: 20px;
+  height: 20px;
 }
 </style>
-
 

@@ -1,166 +1,207 @@
-# 🔐 Cursor用户数据管理系统
+# Cursor 用户数据管理系统
 
-一个现代化的Web应用，用于管理和查询Cursor用户数据，**完美解决跨域问题**。
+一个现代化的 Vue 3 应用，用于管理和展示 Cursor 用户数据。
 
 ## ✨ 特性
 
-- 📊 **数据管理** - 导入、搜索、展示用户数据
-- 🔍 **API查询** - 实时查询账号信息（会员类型、剩余天数）
-- 🎨 **美观界面** - Vue 3 + 现代化UI设计
-- 🚀 **零配置** - 无需安装任何扩展或配置
-- ✅ **无跨域问题** - 使用Vercel Serverless Function代理
+- 📊 **数据统计** - 实时统计总用户数、Pro 用户、有效 Token 和试用用户
+- 📁 **灵活导入** - 支持文件上传和直接粘贴 JSON 数据
+- 🔐 **Token 查询** - 通过 WorkosCursorSessionToken 实时查询账号订阅信息
+- 🔍 **智能搜索** - 实时搜索邮箱、会员类型和系统类型
+- 📋 **详细展示** - 展示用户的完整信息，包括认证信息和设备信息
+- 🎨 **现代设计** - 渐变色彩、流畅动画和响应式布局
+- 💻 **响应式** - 完美适配桌面端和移动端
 
-## 🚀 部署到Vercel（推荐）
+## 🚀 快速开始
 
-### 一键部署
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-repo/cursor-usermanner)
-
-### 手动部署
+### 安装依赖
 
 ```bash
-# 1. 安装Vercel CLI
-npm install -g vercel
-
-# 2. 登录Vercel
-vercel login
-
-# 3. 部署
-vercel
+npm install
 ```
 
-部署成功后，直接访问你的Vercel URL即可使用！
-
-## 💻 本地运行
+### 启动开发服务器
 
 ```bash
-# 1. 克隆项目
-git clone <your-repo>
-cd cursor-usermanner
-
-# 2. 安装Vercel CLI
-npm install -g vercel
-
-# 3. 本地运行
-vercel dev
+npm run dev
 ```
 
-访问 `http://localhost:3000`
+应用将在 `http://localhost:3000` 启动并自动打开浏览器。
 
-## 📖 使用方法
+### 构建生产版本
+
+```bash
+npm run build
+```
+
+### 预览生产版本
+
+```bash
+npm run preview
+```
+
+## 📖 使用说明
 
 ### 1. 导入数据
 
-- 点击 **"📁 导入JSON"** 选择文件
-- 或点击 **"📝 粘贴JSON"** 直接粘贴数据
+项目支持两种导入方式：
 
-### 2. 查询API
+#### 方式一：文件上传
+- 点击 "从文件导入" 按钮
+- 选择 JSON 文件（参考 `sample-data.json`）
+- 数据将自动加载到表格中
 
-- **单个查询**: 点击某行的 **"🔍"** 按钮
-- **批量查询**: 点击顶部 **"🔄 批量查询"** 按钮
+#### 方式二：直接粘贴
+- 点击 "粘贴 JSON" 按钮
+- 在弹出的对话框中粘贴 JSON 数组
+- 点击 "导入" 按钮
 
-### 3. 查看结果
+### 2. Token 查询（新功能）
 
-- 会员类型和剩余天数自动更新
-- 已查询的账号显示绿色背景
+通过 WorkosCursorSessionToken 实时查询账号订阅状态：
 
-## 📝 数据格式
+#### 如何使用：
+1. 在 "账号信息查询" 卡片中，粘贴您的 `WorkosCursorSessionToken`
+2. 点击 "查询账号信息" 按钮
+3. 系统将调用 Cursor API 并展示：
+   - **会员类型**（Pro / 免费试用 / 免费版）
+   - **试用剩余天数**（如果是试用账号）
+   - **订阅状态**（试用中 / 激活 / 已取消等）
+   - **个人会员类型**
+
+#### API 说明：
+- **接口地址**：`https://www.cursor.com/api/auth/stripe`
+- **请求方式**：GET
+- **认证方式**：Cookie 中的 WorkosCursorSessionToken
+- **返回数据**：包含会员类型、试用天数、订阅状态等信息
+
+#### 注意事项：
+- Token 必须是有效的 WorkosCursorSessionToken
+- 请求可能受到 CORS 限制，建议在生产环境配置代理
+- Pro 用户没有 `daysRemainingOnTrial` 字段
+
+### 3. 查看数据
+
+- **统计卡片** - 顶部显示四个关键指标
+- **数据表格** - 展示所有用户的主要信息
+- **详情查看** - 点击每行的眼睛图标查看完整信息
+
+### 4. 搜索过滤
+
+在搜索框中输入关键词，系统会自动过滤：
+- 邮箱地址
+- 会员类型（pro/free）
+- 系统类型（win32/windows/darwin等）
+
+## 📊 数据格式
+
+导入的 JSON 数据应该是一个数组，每个对象包含以下字段：
 
 ```json
 [
   {
     "email": "user@example.com",
-    "auth_info": {
-      "WorkosCursorSessionToken": "user_xxx..."
-    },
     "membershipType": "pro",
-    "daysRemainingOnTrial": null,
+    "system_type": "win32",
     "tokenValidity": true,
-    "register_time": "2025-01-01 12:00:00"
+    "daysRemainingOnTrial": null,
+    "register_time": "2025-08-28 15:22:46",
+    "modelUsage": {
+      "used": 100,
+      "total": 100
+    },
+    "auth_info": {
+      "cursorAuth/accessToken": "...",
+      "cursorAuth/refreshToken": "..."
+    },
+    "machine_info": {
+      "telemetry.machineId": "...",
+      ...
+    }
   }
 ]
 ```
 
-## 🔧 API说明
+详细示例请参考 `sample-data.json` 文件。
 
-### 端点
-```
-GET /api/auth/stripe
-```
+## 🛠️ 技术栈
 
-### 请求头
-```
-X-Cursor-Token: <your-token>
-```
-
-### 响应
-```json
-{
-  "membershipType": "pro",
-  "daysRemainingOnTrial": null,
-  "subscriptionStatus": "active",
-  "individualMembershipType": "pro"
-}
-```
-
-## 🎯 关键问题解决
-
-### ✅ Token解码
-Token中的URL编码（如`%3A%3A`）会自动解码为`::`
-
-### ✅ CORS跨域
-使用Vercel Serverless Function代理，完全避免CORS问题
-
-### ✅ 无需扩展
-不需要安装任何浏览器CORS扩展
+- **Vue 3** - 渐进式 JavaScript 框架
+- **Vite 5** - 下一代前端构建工具
+- **Composition API** - Vue 3 的响应式 API
+- **CSS3** - 现代化样式和动画
 
 ## 📁 项目结构
 
 ```
-cursor-usermanner/
-├── index.html              # 前端页面（Vue 3）
-├── api/
-│   └── auth/
-│       └── stripe.js       # Vercel API函数
-├── vercel.json             # Vercel配置
-└── README.md               # 说明文档
+cursor-user-manager/
+├── src/
+│   ├── components/        # Vue 组件
+│   │   ├── AppHeader.vue      # 应用头部
+│   │   ├── StatsDisplay.vue   # 统计展示
+│   │   ├── ImportControls.vue # 导入控制
+│   │   ├── SearchBox.vue      # 搜索框
+│   │   ├── DataTable.vue      # 数据表格
+│   │   └── EmptyState.vue     # 空状态
+│   ├── assets/           # 静态资源
+│   │   └── style.css         # 全局样式
+│   ├── App.vue           # 根组件
+│   └── main.js           # 入口文件
+├── index.html            # HTML 模板
+├── vite.config.js        # Vite 配置
+├── package.json          # 项目配置
+└── sample-data.json      # 示例数据
 ```
 
-## 🔒 安全说明
+## 🎨 设计特点
 
-- ⚠️ Token为敏感信息，请勿泄露
-- ✅ API函数仅转发请求，不存储任何数据
-- ✅ 所有数据在浏览器本地处理
+- **渐变配色** - 紫色渐变主题，现代感十足
+- **卡片设计** - 圆角卡片，阴影悬浮效果
+- **流畅动画** - hover 效果和过渡动画
+- **响应式布局** - Grid 和 Flexbox 实现自适应
+- **图标系统** - 内联 SVG 图标，清晰美观
 
-## 📱 浏览器支持
+## 📝 开发指南
 
-- Chrome 90+
-- Edge 90+
-- Firefox 88+
-- Safari 14+
+### 组件说明
 
-## 🐛 故障排除
+- **AppHeader.vue** - 应用顶部导航栏
+- **StatsDisplay.vue** - 四个统计卡片，显示关键指标
+- **ImportControls.vue** - 数据导入控制面板
+- **SearchBox.vue** - 搜索输入框，支持实时过滤
+- **DataTable.vue** - 数据表格，包含详情查看功能
+- **EmptyState.vue** - 空状态提示
 
-### 查询失败: Token无效
-- Token可能已过期
-- 请获取最新的Token重新导入
+### 状态管理
 
-### 查询失败: 401错误
-- 检查Token格式是否正确
-- 确保Token未被截断
-
-### 本地开发无法连接API
-- 确保运行 `vercel dev` 而不是直接打开HTML
-- 检查3000端口是否被占用
+使用 Vue 3 的 `ref` 和 `computed` 进行状态管理：
+- `users` - 用户数据数组
+- `searchQuery` - 搜索关键词
+- `stats` - 计算属性，自动统计数据
+- `filteredUsers` - 计算属性，过滤后的用户列表
 
 ## 📄 许可证
 
 MIT License
 
-## 🤝 贡献
+## 🔄 更新日志
 
-欢迎提交Issue和Pull Request！
+### v1.1.0 (最新)
+- ✅ 新增 Token 查询功能
+- ✅ 集成 Cursor Stripe API
+- ✅ 实时查询会员类型和试用天数
+- ✅ 支持查看完整 API 响应数据
+
+### v1.0.0
+- ✅ 初始版本发布
+- ✅ 数据导入和展示功能
+- ✅ 统计和搜索功能
+
+## 👨‍💻 作者
+
+Created with ❤️ by RIPER-6 + P.A.C.E. Engine
 
 ---
 
-**提示**: 这个项目完美解决了跨域问题，无需任何浏览器扩展或复杂配置！
+**提示**：项目已包含示例数据 `sample-data.json`，可以直接导入测试！
+
