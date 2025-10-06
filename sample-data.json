@@ -1,0 +1,61 @@
+[
+  {
+    "email": "wangyangyang@usth.edu.cn",
+    "password": null,
+    "auth_info": {
+      "cursorAuth/cachedSignUpType": "Auth_0",
+      "cursorAuth/cachedEmail": "wangyangyang@usth.edu.cn",
+      "cursorAuth/accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxSlROTVM3RDBWR1lRQk1SR0VDSkEzVlY2IiwidGltZSI6IjE3NTk0OTYyODUiLCJyYW5kb21uZXNzIjoiNTRhYzQzMjctMzdjNS00M2ZkIiwiZXhwIjoxNzY0NjgwMjg1LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoic2Vzc2lvbiJ9.ArIah90oM4ij2NCnGzBSAOIFMAHSTfRbeQB8TKGG-v8",
+      "cursorAuth/refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxSlROTVM3RDBWR1lRQk1SR0VDSkEzVlY2IiwidGltZSI6IjE3NTk0OTYyODUiLCJyYW5kb21uZXNzIjoiNTRhYzQzMjctMzdjNS00M2ZkIiwiZXhwIjoxNzY0NjgwMjg1LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoic2Vzc2lvbiJ9.ArIah90oM4ij2NCnGzBSAOIFMAHSTfRbeQB8TKGG-v8",
+      "WorkosCursorSessionToken": null
+    },
+    "register_time": "2025-08-28 15:22:46",
+    "registerTimeStamp": 1756365766863,
+    "machine_info": {
+      "telemetry.machineId": "61757468307c757365725f9a7fdaf676e206863bae8032b8214ca2e83c913844",
+      "telemetry.macMachineId": "5493e119-9557-4093-84ca-d014a84bf15c",
+      "telemetry.devDeviceId": "4b85b2e0-3009-4811-b953-f6cc4793a493",
+      "telemetry.sqmId": "{97CB0ED2-4394-42B2-AC16-96AC46071B98}",
+      "system.machineGuid": "134aecb3-bfa0-4436-9b1d-9b0b816412b3"
+    },
+    "modelUsage": {
+      "used": 100,
+      "total": 100
+    },
+    "system_type": "win32",
+    "daysRemainingOnTrial": null,
+    "membershipType": "pro",
+    "trialEligible": false,
+    "tokenValidity": true
+  },
+  {
+    "email": "wxras6sy4rhx@waimou.fun",
+    "password": null,
+    "auth_info": {
+      "cursorAuth/cachedSignUpType": "Auth_0",
+      "cursorAuth/cachedEmail": "wxras6sy4rhx@waimou.fun",
+      "cursorAuth/accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxSzVFNzY4MkU4TkVBWVBIRTM0UEQ4SktLIiwidGltZSI6IjE3NTk3NTAxMDEiLCJyYW5kb21uZXNzIjoiMWY5N2ZiYjAtYzQyZS00MTU1IiwiZXhwIjoxNzY0OTM0MTAxLCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoic2Vzc2lvbiJ9.yZm5eOxt1Eu55aEwLFhqABGBzhAcsfXYwMq5igNEDks",
+      "cursorAuth/refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxSzVFNzY4MkU4TkVBWVBIRTM0UEQ4SktLIiwidGltZSI6IjE3NTk3NTAxMDEiLCJyYW5kb21uZXNzIjoiMWY5N2ZiYjAtYzQyZS00MTU1IiwiZXhwIjoxNzY0OTM0MTAxLCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoic2Vzc2lvbiJ9.yZm5eOxt1Eu55aEwLFhqABGBzhAcsfXYwMq5igNEDks",
+      "WorkosCursorSessionToken": "user_01K5E7682E8NEAYPHE34PD8JKK%3A%3AeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxSzVFNzY4MkU4TkVBWVBIRTM0UEQ4SktLIiwidGltZSI6IjE3NTk3NTAwNzQiLCJyYW5kb21uZXNzIjoiOTljMjYwYTctYWY3MS00MTg2IiwiZXhwIjoxNzY0OTM0MDc0LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIn0.Gb8q8oWUCrFQ_U7TGsFDqhIsVksmYbnJ-1FJz3b5Ivc"
+    },
+    "register_time": "2025-09-18 18:51:32",
+    "registerTimeStamp": 1758192692000,
+    "machine_info": {
+      "telemetry.machineId": "61757468307c757365725fa8bbfd483c99751b777cbada7851b7f371fbe9a0f1",
+      "telemetry.macMachineId": "ed2a1b79-394a-4558-afbd-6df73903eec7",
+      "telemetry.devDeviceId": "ccea95fb-3adf-4859-b63b-98ce42bc63e5",
+      "telemetry.sqmId": "{8CF9CDC1-65D9-47BC-948B-93F5AC7336D0}",
+      "system.machineGuid": "e4e228ce-8fa5-454b-b474-abfbcc6405af"
+    },
+    "modelUsage": {
+      "used": 100,
+      "total": 100
+    },
+    "system_type": "windows",
+    "daysRemainingOnTrial": 1,
+    "membershipType": "pro",
+    "trialEligible": false,
+    "tokenValidity": true
+  }
+]
+
