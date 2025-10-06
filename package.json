@@ -1,7 +1,6 @@
 {
   "name": "cursor-user-manager",
   "version": "2.0.0",
-  "type": "module",
   "description": "Cursor用户数据管理系统 - Vue 3 + Vite + Vercel",
   "scripts": {
     "dev": "vite",
@@ -9,8 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.4.0",
-    "node-fetch": "^2.7.0"
+    "vue": "^3.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",

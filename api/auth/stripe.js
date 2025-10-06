@@ -1,7 +1,7 @@
 // Vercel Serverless Function
 // 代理Cursor API请求，解决CORS问题
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // 设置CORS头
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -42,15 +42,8 @@ module.exports = async function handler(req, res) {
 
     console.log(`[API] 处理请求，Token前10位: ${token.substring(0, 10)}...`);
 
-    // 使用原生fetch（Node.js 18+）或node-fetch
-    let fetchFn = global.fetch;
-    if (!fetchFn) {
-      // 如果Node.js版本较低，使用node-fetch
-      fetchFn = require('node-fetch');
-    }
-
-    // 转发请求到Cursor API
-    const response = await fetchFn('https://www.cursor.com/api/auth/stripe', {
+    // 转发请求到Cursor API（使用原生fetch，Vercel运行时支持）
+    const response = await fetch('https://www.cursor.com/api/auth/stripe', {
       method: 'GET',
       headers: {
         'Cookie': `WorkosCursorSessionToken=${token}`,
@@ -83,8 +76,8 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({
       error: '服务器错误',
       message: error.message,
-      type: error.name
+      stack: error.stack?.substring(0, 200)
     });
   }
-};
+}
 

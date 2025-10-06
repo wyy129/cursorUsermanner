@@ -1,6 +1,6 @@
 // 健康检查端点
 
-module.exports = function handler(req, res) {
+export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
   
@@ -8,6 +8,7 @@ module.exports = function handler(req, res) {
     status: 'ok',
     message: 'Cursor User Manager API is running on Vercel',
     timestamp: new Date().toISOString(),
-    version: '2.0.0'
+    version: '2.0.0',
+    node_version: process.version
   });
-};
+}
