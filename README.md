@@ -1,337 +1,166 @@
 # 🔐 Cursor用户数据管理系统
 
-一个用于管理和查询Cursor用户数据的现代化Web应用。
+一个现代化的Web应用，用于管理和查询Cursor用户数据，**完美解决跨域问题**。
 
-**技术栈：** Vue 3 + Vite + Vercel Serverless Functions
+## ✨ 特性
 
-**在线演示：** [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/cursor-user-manager)
+- 📊 **数据管理** - 导入、搜索、展示用户数据
+- 🔍 **API查询** - 实时查询账号信息（会员类型、剩余天数）
+- 🎨 **美观界面** - Vue 3 + 现代化UI设计
+- 🚀 **零配置** - 无需安装任何扩展或配置
+- ✅ **无跨域问题** - 使用Vercel Serverless Function代理
 
----
+## 🚀 部署到Vercel（推荐）
 
-## ✨ 功能特性
+### 一键部署
 
-- 📁 **本地数据导入** - 支持JSON文件上传和文本粘贴
-- 🔍 **实时搜索** - 快速搜索用户邮箱
-- 📊 **数据统计** - 显示总账户数和有效Token数量
-- 🔌 **Cursor API查询** - 查询用户的Stripe订阅信息
-- 📋 **Token管理** - 查看和复制Token
-- 🎨 **现代UI** - 美观的渐变紫色主题
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-repo/cursor-usermanner)
 
----
+### 手动部署
 
-## 🚀 快速开始
-
-### 方式1：部署到Vercel（推荐）⭐
-
-一键部署，完整功能：
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/cursor-user-manager)
-
-或使用CLI：
 ```bash
-npm i -g vercel
-vercel --prod
+# 1. 安装Vercel CLI
+npm install -g vercel
+
+# 2. 登录Vercel
+vercel login
+
+# 3. 部署
+vercel
 ```
 
-**详细步骤：** [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md)
+部署成功后，直接访问你的Vercel URL即可使用！
 
-### 方式2：本地开发
+## 💻 本地运行
 
 ```bash
-# 安装依赖
-npm install
+# 1. 克隆项目
+git clone <your-repo>
+cd cursor-usermanner
 
-# 启动开发服务器
-npm run dev
+# 2. 安装Vercel CLI
+npm install -g vercel
+
+# 3. 本地运行
+vercel dev
 ```
 
 访问 `http://localhost:3000`
 
----
-
-## 📖 使用说明
+## 📖 使用方法
 
 ### 1. 导入数据
 
-**方式一：文件导入**
-1. 点击 "📁 导入JSON文件"
-2. 选择包含用户数据的JSON文件
+- 点击 **"📁 导入JSON"** 选择文件
+- 或点击 **"📝 粘贴JSON"** 直接粘贴数据
 
-**方式二：文本导入**
-1. 点击 "📝 粘贴JSON文本"
-2. 粘贴JSON数据
-3. 点击 "导入"
+### 2. 查询API
 
-**数据格式：**
+- **单个查询**: 点击某行的 **"🔍"** 按钮
+- **批量查询**: 点击顶部 **"🔄 批量查询"** 按钮
+
+### 3. 查看结果
+
+- 会员类型和剩余天数自动更新
+- 已查询的账号显示绿色背景
+
+## 📝 数据格式
+
 ```json
 [
   {
     "email": "user@example.com",
     "auth_info": {
-      "WorkosCursorSessionToken": "user_xxx...",
-      "cursorAuth/accessToken": "eyJhbGci...",
-      "cursorAuth/refreshToken": "eyJhbGci..."
+      "WorkosCursorSessionToken": "user_xxx..."
     },
     "membershipType": "pro",
     "daysRemainingOnTrial": null,
     "tokenValidity": true,
-    "register_time": "2025-08-28 15:22:46"
+    "register_time": "2025-01-01 12:00:00"
   }
 ]
 ```
 
-### 2. 查询Cursor Stripe信息
+## 🔧 API说明
 
-导入数据后，对于有`WorkosCursorSessionToken`的用户：
+### 端点
+```
+GET /api/auth/stripe
+```
 
-**在表格中：**
-- 点击 "🔍 查询Stripe" 按钮
+### 请求头
+```
+X-Cursor-Token: <your-token>
+```
 
-**在详情页：**
-- 点击 "👁️ 查看详情"
-- 点击 "🔍 查询Stripe信息" 按钮
-
-系统会调用Cursor官方API获取用户的订阅信息。
-
----
-
-## 🌐 Cursor API说明
-
-### API接口
-
-**地址：** `https://www.cursor.com/api/auth/stripe`  
-**方法：** `GET`  
-**认证：** Cookie中的 `WorkosCursorSessionToken`
-
-### 环境配置
-
-#### 开发环境
-
-使用Vite代理自动转发请求，避免CORS问题：
-
-```javascript
-// vite.config.js
-proxy: {
-  '/api': {
-    target: 'https://www.cursor.com',
-    changeOrigin: true,
-    secure: false
-  }
+### 响应
+```json
+{
+  "membershipType": "pro",
+  "daysRemainingOnTrial": null,
+  "subscriptionStatus": "active",
+  "individualMembershipType": "pro"
 }
 ```
 
-#### 生产环境
+## 🎯 关键问题解决
 
-**⚠️ 重要提示：** 生产环境直接从浏览器请求Cursor API会遇到CORS问题，因为Cursor API不允许跨域请求。
+### ✅ Token解码
+Token中的URL编码（如`%3A%3A`）会自动解码为`::`
 
-**解决方案：**
+### ✅ CORS跨域
+使用Vercel Serverless Function代理，完全避免CORS问题
 
-1. **使用开发环境**（推荐用于测试）
-   ```bash
-   npm run dev
-   ```
+### ✅ 无需扩展
+不需要安装任何浏览器CORS扩展
 
-2. **部署后端代理**（生产环境推荐）
-   
-   创建一个简单的后端服务来代理请求：
-   
-   ```javascript
-   // server.js (Node.js示例)
-   const express = require('express');
-   const fetch = require('node-fetch');
-   const app = express();
-   
-   app.get('/api/auth/stripe', async (req, res) => {
-     const token = req.headers.cookie?.match(/WorkosCursorSessionToken=([^;]+)/)?.[1];
-     
-     const response = await fetch('https://www.cursor.com/api/auth/stripe', {
-       headers: {
-         'Cookie': `WorkosCursorSessionToken=${token}`
-       }
-     });
-     
-     const data = await response.json();
-     res.json(data);
-   });
-   
-   app.listen(3001);
-   ```
-
-3. **本地使用**（最简单）
-   
-   仅在本地开发环境使用此功能。
-
----
-
-## 🛠️ 项目结构
+## 📁 项目结构
 
 ```
-cursor-user-manager/
-├── index.html                 # HTML入口
-├── package.json               # 项目配置
-├── vite.config.js            # Vite配置（含代理）
-├── src/
-│   ├── main.js               # Vue应用入口
-│   ├── App.vue               # 根组件
-│   ├── assets/
-│   │   └── style.css         # 全局样式
-│   ├── components/           # Vue组件
-│   │   ├── AppHeader.vue
-│   │   ├── ImportControls.vue
-│   │   ├── SearchBox.vue
-│   │   ├── StatsDisplay.vue
-│   │   ├── DataTable.vue
-│   │   ├── EmptyState.vue
-│   │   ├── TokenModal.vue
-│   │   └── TextImportModal.vue
-│   └── utils/
-│       ├── api.js            # API调用
-│       └── message.js        # 消息提示
-└── README.md
+cursor-usermanner/
+├── index.html              # 前端页面（Vue 3）
+├── api/
+│   └── auth/
+│       └── stripe.js       # Vercel API函数
+├── vercel.json             # Vercel配置
+└── README.md               # 说明文档
 ```
 
----
+## 🔒 安全说明
 
-## 🔍 功能详解
+- ⚠️ Token为敏感信息，请勿泄露
+- ✅ API函数仅转发请求，不存储任何数据
+- ✅ 所有数据在浏览器本地处理
 
-### 数据表格
+## 📱 浏览器支持
 
-显示所有导入的用户信息：
-- 序号
-- Email
-- WorkosCursorSessionToken（折叠显示）
-- 会员类型（Pro/Free/试用）
-- 剩余天数
-- Token状态
-- 注册时间
-- 操作按钮
+- Chrome 90+
+- Edge 90+
+- Firefox 88+
+- Safari 14+
 
-### Token状态
+## 🐛 故障排除
 
-| 状态 | 显示 | 说明 |
-|------|------|------|
-| 有Token且有效 | ✅ 有效 | 正常显示 |
-| 有Token但失效 | ⚠️ Token失效 | 橙色背景 |
-| 无Token | ❌ 无Token | 红色淡化背景 |
+### 查询失败: Token无效
+- Token可能已过期
+- 请获取最新的Token重新导入
 
-### Stripe查询功能
+### 查询失败: 401错误
+- 检查Token格式是否正确
+- 确保Token未被截断
 
-点击"查询Stripe"按钮后，系统会：
-1. 获取用户的`WorkosCursorSessionToken`
-2. 调用Cursor API
-3. 返回订阅信息（以弹窗形式显示）
-
-**返回信息可能包含：**
-- 订阅状态
-- 订阅类型
-- 订阅有效期
-- 支付信息等
-
----
-
-## ⚠️ 注意事项
-
-### 1. 在线查询功能
-
-- **本地开发**：通过Vite代理实现
-- **Vercel部署**：通过Serverless Functions实现，完整功能可用 ✅
-- **其他平台**：需要配置后端代理
-
-### 2. Token安全
-
-- Token是敏感信息，请勿在公网暴露
-- 建议仅在本地或内部网络使用
-- 不要将含有真实Token的JSON文件提交到代码仓库
-
-### 3. API限制
-
-- Cursor API可能有请求频率限制
-- 请勿频繁查询
-- 仅用于合法目的
-
----
-
-## 🐛 常见问题
-
-### Q: 点击"查询Stripe"后显示401 Unauthorized
-
-**A:** 这说明Token无效或已过期。
-
-**验证Token：**
-```bash
-# 使用curl直接测试Cursor API
-curl "https://www.cursor.com/api/auth/stripe" \
-  -H "Cookie: WorkosCursorSessionToken=你的Token"
-```
-
-如果返回401，说明Token确实无效，需要：
-1. 重新登录Cursor应用
-2. 从Cursor存储中获取新Token
-3. 更新JSON数据
-
-**详细指南：** [TOKEN_TEST.md](./TOKEN_TEST.md)
-
-### Q: 如何获取WorkosCursorSessionToken？
-
-**A:** 从Cursor应用存储中获取：
-- **Windows**: `%APPDATA%\Cursor\User\globalStorage\`
-- **Mac**: `~/Library/Application Support/Cursor/User/globalStorage/`
-- **Linux**: `~/.config/Cursor/User/globalStorage/`
-
-查找包含 `WorkosCursorSessionToken` 的文件。
-
-### Q: 推荐的部署方式？
-
-**A:** 强烈推荐 **Vercel部署**：
-
-```bash
-npm i -g vercel
-vercel --prod
-```
-
-**优势：**
-- ✅ 完全免费
-- ✅ API查询功能完美支持
-- ✅ 自动HTTPS和全球CDN
-- ✅ 秒级部署
-- ✅ 零配置
-
-**详细指南：** [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md)
-
-### Q: 本地开发？
-
-**A:** 
-```bash
-npm install
-npm run dev
-```
-访问 `http://localhost:3000`
-
----
-
-## 📚 技术栈
-
-- **Vue 3** - 渐进式JavaScript框架
-- **Vite 5** - 下一代前端构建工具
-- **Vercel** - Serverless部署平台
-- **Node.js** - Serverless Functions
-- **现代CSS** - CSS变量、渐变、动画
-
----
+### 本地开发无法连接API
+- 确保运行 `vercel dev` 而不是直接打开HTML
+- 检查3000端口是否被占用
 
 ## 📄 许可证
 
-本项目仅供学习和个人使用。
+MIT License
+
+## 🤝 贡献
+
+欢迎提交Issue和Pull Request！
 
 ---
 
-## 🔗 相关链接
-
-- [Vue 3 文档](https://vuejs.org/)
-- [Vite 文档](https://vitejs.dev/)
-- [Cursor 官网](https://www.cursor.com/)
-
----
-
-**💡 提示：** 如需生产环境部署，建议配置后端代理服务来处理API请求。
-
+**提示**: 这个项目完美解决了跨域问题，无需任何浏览器扩展或复杂配置！

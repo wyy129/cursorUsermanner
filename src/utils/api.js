@@ -39,6 +39,16 @@ export async function queryUserStripeInfo(token, debug = false) {
     console.log('Token长度:', token.length, '前缀:', token.substring(0, 15))
     console.log('调试模式:', debug ? '✅ 开启' : '❌ 关闭')
     
+    // 触发请求监控事件（在请求前）
+    const requestStartEvent = new CustomEvent('stripe-api-call-start', {
+      detail: {
+        apiUrl,
+        token,
+        timestamp: new Date().toISOString()
+      }
+    })
+    window.dispatchEvent(requestStartEvent)
+    
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
@@ -59,6 +69,19 @@ export async function queryUserStripeInfo(token, debug = false) {
       const errorData = await response.json().catch(() => ({ error: '无法解析错误响应' }))
       console.error('API错误响应:', errorData)
       
+      // 触发请求监控事件（失败）
+      const errorEvent = new CustomEvent('stripe-api-call', {
+        detail: {
+          success: false,
+          apiUrl,
+          token,
+          statusCode: response.status,
+          statusText: response.statusText,
+          data: errorData
+        }
+      })
+      window.dispatchEvent(errorEvent)
+      
       return { 
         success: false, 
         error: `HTTP ${response.status}: ${errorData.error || response.statusText}`,
@@ -78,6 +101,19 @@ export async function queryUserStripeInfo(token, debug = false) {
       console.log('📨 Cursor 响应:', data._debug.cursorResponse)
       console.groupEnd()
     }
+    
+    // 触发请求监控事件（成功）
+    const successEvent = new CustomEvent('stripe-api-call', {
+      detail: {
+        success: true,
+        apiUrl,
+        token,
+        statusCode: 200,
+        statusText: 'OK',
+        data: data
+      }
+    })
+    window.dispatchEvent(successEvent)
     
     return { success: true, data }
     

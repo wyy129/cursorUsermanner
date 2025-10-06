@@ -25,6 +25,9 @@
 
     <!-- Token 测试工具 -->
     <TokenTester v-if="showTokenTester" />
+    
+    <!-- 实时请求监控器 -->
+    <RequestMonitor />
 
     <DataTable 
       v-if="filteredData.length > 0"
@@ -72,6 +75,7 @@ import TokenModal from './components/TokenModal.vue'
 import StripeInfoModal from './components/StripeInfoModal.vue'
 import TextImportModal from './components/TextImportModal.vue'
 import TokenTester from './components/TokenTester.vue'
+import RequestMonitor from './components/RequestMonitor.vue'
 import { showMessage } from './utils/message'
 import { queryUserStripeInfo } from './utils/api'
 
