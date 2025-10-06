@@ -39,15 +39,31 @@ export default async function handler(req, res) {
         
         console.log(`[API] 最终Token: ${token.substring(0, 50)}...`);
         
-        // 转发请求到Cursor API - 使用解码后的Token
+        // 尝试多种Cookie格式
+        const cookieFormats = [
+            `WorkosCursorSessionToken=${token}`,
+            `WorkosCursorSessionToken=${encodeURIComponent(token)}`,
+        ];
+        
+        console.log(`[API] 尝试第一种Cookie格式...`);
+        
+        // 转发请求到Cursor API - 使用更完整的headers模拟真实浏览器
         const response = await fetch('https://www.cursor.com/api/auth/stripe', {
             method: 'GET',
             headers: {
-                'Cookie': `WorkosCursorSessionToken=${token}`,
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'application/json',
+                'Cookie': cookieFormats[0],
+                'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7',
+                'Accept-Encoding': 'gzip, deflate, br',
                 'Referer': 'https://www.cursor.com/',
-                'Origin': 'https://www.cursor.com'
+                'Origin': 'https://www.cursor.com',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-origin',
+                'Sec-Ch-Ua': '"Chromium";v="130", "Microsoft Edge";v="130"',
+                'Sec-Ch-Ua-Mobile': '?0',
+                'Sec-Ch-Ua-Platform': '"Windows"'
             }
         });
 
@@ -62,10 +78,38 @@ export default async function handler(req, res) {
             return res.status(200).json(jsonData);
         } else {
             console.log(`[API] ❌ 失败: ${data}`);
+            
+            // 如果失败，尝试第二种Cookie格式
+            if (response.status === 401) {
+                console.log(`[API] 尝试URL编码的Cookie格式...`);
+                const response2 = await fetch('https://www.cursor.com/api/auth/stripe', {
+                    method: 'GET',
+                    headers: {
+                        'Cookie': cookieFormats[1],
+                        'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
+                        'Accept': 'application/json',
+                        'Referer': 'https://www.cursor.com/',
+                        'Origin': 'https://www.cursor.com'
+                    }
+                });
+                
+                const data2 = await response2.text();
+                console.log(`[API] 第二次尝试响应: ${response2.status}`);
+                
+                if (response2.ok) {
+                    const jsonData = JSON.parse(data2);
+                    console.log(`[API] ✅ 第二次成功!`);
+                    return res.status(200).json(jsonData);
+                } else {
+                    console.log(`[API] ❌ 第二次也失败: ${data2}`);
+                }
+            }
+            
             return res.status(response.status).json({ 
-                error: 'Cursor API Error',
-                status: response.status,
-                data: data
+                error: 'Token可能已过期或无效',
+                message: '请确认Token是最新的且尚未过期',
+                cursor_error: data,
+                status: response.status
             });
         }
 
