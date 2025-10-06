@@ -115,6 +115,50 @@ export default async function handler(req, res) {
     // 尝试解析JSON
     try {
       const data = JSON.parse(responseText);
+      
+      // 在开发/调试模式下，附加请求详情
+      const includeDebugInfo = req.headers['x-debug'] === 'true' || req.query.debug === 'true';
+      
+      if (includeDebugInfo) {
+        console.log('[API] 📋 附加调试信息到响应');
+        return res.status(200).json({
+          ...data,
+          _debug: {
+            note: '这是调试信息，仅在添加 ?debug=true 或 X-Debug: true 时显示',
+            requestToVercel: {
+              method: 'GET',
+              url: `${req.headers.origin || 'N/A'}${req.url}`,
+              headers: {
+                'X-Cursor-Token': token.substring(0, 20) + '...',
+                'Origin': req.headers.origin,
+                'User-Agent': req.headers['user-agent']?.substring(0, 50) + '...'
+              }
+            },
+            requestToCursor: {
+              method: 'GET',
+              url: 'https://www.cursor.com/api/auth/stripe',
+              headers: {
+                'Cookie': `WorkosCursorSessionToken=${token.substring(0, 20)}...`,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)...',
+                'Accept': 'application/json, text/plain, */*',
+                'Origin': 'https://www.cursor.com',
+                'Referer': 'https://www.cursor.com/'
+              }
+            },
+            tokenInfo: {
+              length: token.length,
+              prefix: token.substring(0, 20),
+              startsWithUser: token.startsWith('user_')
+            },
+            cursorResponse: {
+              status: response.status,
+              statusText: response.statusText,
+              contentLength: responseText.length
+            }
+          }
+        });
+      }
+      
       return res.status(200).json(data);
     } catch (e) {
       // 如果不是JSON，返回原始文本

@@ -30,19 +30,23 @@ function getApiUrl() {
 /**
  * 查询用户的Stripe信息
  * @param {string} token - WorkosCursorSessionToken
+ * @param {boolean} debug - 是否启用调试模式（显示完整请求详情）
  */
-export async function queryUserStripeInfo(token) {
+export async function queryUserStripeInfo(token, debug = false) {
   try {
-    const apiUrl = getApiUrl()
+    const apiUrl = getApiUrl() + (debug ? '?debug=true' : '')
     console.log('请求地址:', apiUrl)
     console.log('Token长度:', token.length, '前缀:', token.substring(0, 15))
+    console.log('调试模式:', debug ? '✅ 开启' : '❌ 关闭')
     
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         // 通过自定义header传递Token（避免浏览器Cookie限制）
-        'X-Cursor-Token': token
+        'X-Cursor-Token': token,
+        // 调试模式标记
+        ...(debug ? { 'X-Debug': 'true' } : {})
       },
       // 生产环境使用include以支持跨域Cookie，开发环境使用same-origin
       credentials: import.meta.env.DEV ? 'same-origin' : 'include'
@@ -64,6 +68,17 @@ export async function queryUserStripeInfo(token) {
     
     const data = await response.json()
     console.log('成功获取数据:', data)
+    
+    // 如果响应中包含调试信息，单独显示
+    if (data._debug) {
+      console.group('🔍 调试信息（请求详情）')
+      console.log('1️⃣ 前端 → Vercel Function:', data._debug.requestToVercel)
+      console.log('2️⃣ Vercel Function → Cursor API:', data._debug.requestToCursor)
+      console.log('📝 Token 信息:', data._debug.tokenInfo)
+      console.log('📨 Cursor 响应:', data._debug.cursorResponse)
+      console.groupEnd()
+    }
+    
     return { success: true, data }
     
   } catch (error) {

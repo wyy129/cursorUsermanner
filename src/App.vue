@@ -17,7 +17,14 @@
         :total-count="filteredData.length"
         :valid-token-count="validTokenCount"
       />
+      
+      <button class="btn btn-secondary" @click="showTokenTester = !showTokenTester">
+        {{ showTokenTester ? '🔽 隐藏测试工具' : '🔬 显示Token测试工具' }}
+      </button>
     </div>
+
+    <!-- Token 测试工具 -->
+    <TokenTester v-if="showTokenTester" />
 
     <DataTable 
       v-if="filteredData.length > 0"
@@ -64,6 +71,7 @@ import EmptyState from './components/EmptyState.vue'
 import TokenModal from './components/TokenModal.vue'
 import StripeInfoModal from './components/StripeInfoModal.vue'
 import TextImportModal from './components/TextImportModal.vue'
+import TokenTester from './components/TokenTester.vue'
 import { showMessage } from './utils/message'
 import { queryUserStripeInfo } from './utils/api'
 
@@ -74,6 +82,7 @@ const searchTerm = ref('')
 const showModal = ref(false)
 const showTextImportModal = ref(false)
 const showStripeModal = ref(false)
+const showTokenTester = ref(false)
 const selectedUser = ref(null)
 const stripeData = ref({})
 const currentUserEmail = ref('')
