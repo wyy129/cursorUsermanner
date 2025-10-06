@@ -353,17 +353,22 @@
             },
             async queryOne(i) {
                 const item = this.filtered[i];
-                const token = item.auth_info?.WorkosCursorSessionToken;
+                let token = item.auth_info?.WorkosCursorSessionToken;
                 if (!token) return;
+
+                // 确保Token已解码
+                if (token.includes('%')) {
+                    token = decodeURIComponent(token);
+                    console.log('[前端] Token已解码');
+                }
 
                 item.loading = true;
                 try {
-                    // 解码URL编码的Token
-                    const decodedToken = decodeURIComponent(token);
+                    console.log(`[前端] 发送Token: ${token.substring(0, 50)}...`);
                     
                     const res = await axios.get(this.apiBase, {
                         headers: {
-                            'X-Cursor-Token': decodedToken
+                            'X-Cursor-Token': token
                         }
                     });
                     
@@ -372,8 +377,8 @@
                 } catch (err) {
                     console.error('查询失败:', err);
                     const msg = err.response?.status === 401 
-                        ? 'Token无效或已过期' 
-                        : '查询失败：' + (err.message || '未知错误');
+                        ? '❌ Token无效或已过期' 
+                        : '❌ 查询失败：' + (err.response?.data?.message || err.message || '未知错误');
                     this.showToast(msg, 'error');
                 } finally {
                     item.loading = false;
@@ -389,16 +394,21 @@
                 for (let i = 0; i < items.length; i++) {
                     this.progress = `${i + 1}/${items.length}`;
                     const item = items[i];
-                    const token = item.auth_info.WorkosCursorSessionToken;
+                    let token = item.auth_info.WorkosCursorSessionToken;
+                    
+                    // 确保Token已解码
+                    if (token.includes('%')) {
+                        token = decodeURIComponent(token);
+                    }
                     
                     try {
-                        const decodedToken = decodeURIComponent(token);
                         const res = await axios.get(this.apiBase, {
-                            headers: { 'X-Cursor-Token': decodedToken }
+                            headers: { 'X-Cursor-Token': token }
                         });
                         item.apiData = res.data;
                         success++;
-                    } catch {
+                    } catch (err) {
+                        console.error(`账号 ${item.email} 查询失败:`, err);
                         fail++;
                     }
                     

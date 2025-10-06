@@ -14,8 +14,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        // 从header获取Token
-        const token = req.headers['x-cursor-token'];
+        // 从header获取Token（可能是URL编码的）
+        let token = req.headers['x-cursor-token'];
         
         if (!token) {
             return res.status(400).json({ 
@@ -24,16 +24,26 @@ export default async function handler(req, res) {
             });
         }
 
-        console.log(`[API] 收到查询请求，Token: ${token.substring(0, 30)}...`);
+        console.log(`[API] 收到Token（原始）: ${token.substring(0, 50)}...`);
 
-        // 确保Token已解码
-        const decodedToken = decodeURIComponent(token);
+        // 检查是否包含URL编码，如果是则解码
+        if (token.includes('%')) {
+            token = decodeURIComponent(token);
+            console.log(`[API] Token已解码: ${token.substring(0, 50)}...`);
+        }
         
-        // 转发请求到Cursor API
+        // 验证Token格式（应该包含::而不是%3A%3A）
+        if (!token.includes('::')) {
+            console.log('[API] ⚠️ Token格式可能不正确，缺少::分隔符');
+        }
+        
+        console.log(`[API] 最终Token: ${token.substring(0, 50)}...`);
+        
+        // 转发请求到Cursor API - 使用解码后的Token
         const response = await fetch('https://www.cursor.com/api/auth/stripe', {
             method: 'GET',
             headers: {
-                'Cookie': `WorkosCursorSessionToken=${decodedToken}`,
+                'Cookie': `WorkosCursorSessionToken=${token}`,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'Accept': 'application/json',
                 'Referer': 'https://www.cursor.com/',
