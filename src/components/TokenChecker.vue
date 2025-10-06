@@ -19,17 +19,34 @@
           ></textarea>
         </div>
         
-        <button 
-          class="btn btn-primary btn-check"
-          @click="checkToken"
-          :disabled="!sessionToken.trim() || loading"
-        >
-          <svg v-if="!loading" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 21L15 15L21 21ZM17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span v-if="loading" class="loading-spinner"></span>
-          {{ loading ? '查询中...' : '查询账号信息' }}
-        </button>
+        <div class="control-group">
+          <div class="mode-switch">
+            <label class="switch-label">
+              <input 
+                type="checkbox" 
+                v-model="useBackend"
+                class="switch-input"
+              >
+              <span class="switch-slider"></span>
+              <span class="switch-text">使用后端代理</span>
+            </label>
+            <div class="mode-hint">
+              {{ useBackend ? '✅ 通过后端服务调用（推荐）' : '⚠️ 直接调用（可能受 CORS 限制）' }}
+            </div>
+          </div>
+          
+          <button 
+            class="btn btn-primary btn-check"
+            @click="checkToken"
+            :disabled="!sessionToken.trim() || loading"
+          >
+            <svg v-if="!loading" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 21L15 15L21 21ZM17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span v-if="loading" class="loading-spinner"></span>
+            {{ loading ? '查询中...' : '查询账号信息' }}
+          </button>
+        </div>
       </div>
       
       <!-- 查询结果 -->
@@ -92,6 +109,15 @@
             <h4>查询失败</h4>
           </div>
           <p class="error-message">{{ result.error }}</p>
+          <div v-if="result.suggestion" class="error-suggestion">
+            <p><strong>💡 建议：</strong></p>
+            <p>{{ result.suggestion }}</p>
+          </div>
+          <div v-if="!useBackend" class="error-action">
+            <button class="btn btn-secondary" @click="useBackend = true; checkToken()">
+              🔄 切换到后端代理模式重试
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -100,11 +126,12 @@
 
 <script setup>
 import { ref } from 'vue'
-import { fetchStripeInfo } from '../utils/api.js'
+import { fetchStripeInfo, fetchStripeInfoViaBackend } from '../utils/api.js'
 
 const sessionToken = ref('')
 const loading = ref(false)
 const result = ref(null)
+const useBackend = ref(false) // 是否使用后端代理
 
 const checkToken = async () => {
   if (!sessionToken.value.trim()) return
@@ -113,7 +140,11 @@ const checkToken = async () => {
   result.value = null
   
   try {
-    const response = await fetchStripeInfo(sessionToken.value.trim())
+    // 根据选择使用不同的调用方式
+    const response = useBackend.value 
+      ? await fetchStripeInfoViaBackend(sessionToken.value.trim())
+      : await fetchStripeInfo(sessionToken.value.trim())
+    
     result.value = response
   } catch (error) {
     result.value = {
@@ -179,6 +210,12 @@ const formatSubscriptionStatus = (status) => {
 }
 
 .checker-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.control-group {
   display: flex;
   gap: 1rem;
   align-items: flex-end;
@@ -392,7 +429,95 @@ const formatSubscriptionStatus = (status) => {
 .error-message {
   color: #c53030;
   font-size: 0.9rem;
-  margin: 0;
+  margin: 0 0 1rem 0;
+}
+
+.error-suggestion {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #742a2a;
+}
+
+.error-suggestion p {
+  margin: 0.5rem 0;
+}
+
+.error-suggestion p:first-child {
+  margin-top: 0;
+}
+
+.error-action {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.error-action .btn {
+  background: #667eea;
+  color: white;
+}
+
+.mode-switch {
+  flex: 1;
+  min-width: 250px;
+}
+
+.switch-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch-input {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  appearance: none;
+  background: #cbd5e0;
+  border-radius: 12px;
+  outline: none;
+  transition: background 0.3s;
+  cursor: pointer;
+}
+
+.switch-input:checked {
+  background: #667eea;
+}
+
+.switch-input::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switch-input:checked::before {
+  transform: translateX(24px);
+}
+
+.switch-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.mode-hint {
+  font-size: 0.75rem;
+  color: #718096;
+  margin-top: 0.25rem;
+  margin-left: 56px;
 }
 
 @media (max-width: 768px) {

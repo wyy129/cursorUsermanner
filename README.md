@@ -14,19 +14,49 @@
 
 ## 🚀 快速开始
 
-### 安装依赖
+### 方式一：一键启动（推荐）
 
+**Windows:**
 ```bash
-npm install
+start.bat
 ```
 
-### 启动开发服务器
+**Linux/Mac:**
+```bash
+chmod +x start.sh
+./start.sh
+```
 
+这将自动启动后端代理服务和前端应用。
+
+### 方式二：手动启动
+
+#### 1. 安装依赖
+
+```bash
+# 安装前端依赖
+npm install
+
+# 安装后端依赖
+cd server
+npm install
+cd ..
+```
+
+#### 2. 启动服务
+
+**启动后端代理（终端 1）：**
+```bash
+cd server
+npm start
+```
+
+**启动前端应用（终端 2）：**
 ```bash
 npm run dev
 ```
 
-应用将在 `http://localhost:3000` 启动并自动打开浏览器。
+应用将在 `http://localhost:3000` 启动，后端代理在 `http://localhost:3001`。
 
 ### 构建生产版本
 
@@ -77,8 +107,37 @@ npm run preview
 
 #### 注意事项：
 - Token 必须是有效的 WorkosCursorSessionToken
-- 请求可能受到 CORS 限制，建议在生产环境配置代理
+- **⚠️ 推荐使用后端代理模式**（避免 308 重定向和 CORS 问题）
 - Pro 用户没有 `daysRemainingOnTrial` 字段
+
+#### 解决 308 重定向问题：
+
+如果遇到 `308 Permanent Redirect` 或 CORS 错误，请使用后端代理：
+
+**快速启动（推荐）：**
+```bash
+# Windows
+start.bat
+
+# Linux/Mac
+chmod +x start.sh
+./start.sh
+```
+
+**手动启动：**
+```bash
+# 终端 1：启动后端代理
+cd server
+npm install
+npm start
+
+# 终端 2：启动前端
+npm run dev
+```
+
+然后在界面上**开启"使用后端代理"开关**即可正常使用。
+
+详细配置请参考 [PROXY_SETUP.md](./PROXY_SETUP.md)
 
 ### 3. 查看数据
 
@@ -186,7 +245,14 @@ MIT License
 
 ## 🔄 更新日志
 
-### v1.1.0 (最新)
+### v1.2.0 (最新)
+- ✅ 修复 308 重定向问题
+- ✅ 新增后端代理服务
+- ✅ 支持直接调用和代理模式切换
+- ✅ 添加一键启动脚本
+- ✅ 优化错误提示和重试机制
+
+### v1.1.0
 - ✅ 新增 Token 查询功能
 - ✅ 集成 Cursor Stripe API
 - ✅ 实时查询会员类型和试用天数
