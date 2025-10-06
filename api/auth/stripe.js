@@ -26,32 +26,25 @@ export default async function handler(req, res) {
 
         console.log(`[API] 收到Token（原始）: ${token.substring(0, 50)}...`);
 
-        // 检查是否包含URL编码，如果是则解码
-        if (token.includes('%')) {
-            token = decodeURIComponent(token);
-            console.log(`[API] Token已解码: ${token.substring(0, 50)}...`);
+        // Token可能是解码状态（::），需要编码为（%3A%3A）再放到Cookie中
+        let cookieToken = token;
+        
+        // 如果Token已经是解码状态（包含::），需要编码
+        if (token.includes('::') && !token.includes('%')) {
+            cookieToken = encodeURIComponent(token);
+            console.log(`[API] Token已编码为Cookie格式: ${cookieToken.substring(0, 50)}...`);
+        } else if (token.includes('%')) {
+            // 已经是编码状态，直接使用
+            console.log(`[API] Token已是编码格式，直接使用`);
         }
         
-        // 验证Token格式（应该包含::而不是%3A%3A）
-        if (!token.includes('::')) {
-            console.log('[API] ⚠️ Token格式可能不正确，缺少::分隔符');
-        }
+        console.log(`[API] 最终Cookie: WorkosCursorSessionToken=${cookieToken.substring(0, 50)}...`);
         
-        console.log(`[API] 最终Token: ${token.substring(0, 50)}...`);
-        
-        // 尝试多种Cookie格式
-        const cookieFormats = [
-            `WorkosCursorSessionToken=${token}`,
-            `WorkosCursorSessionToken=${encodeURIComponent(token)}`,
-        ];
-        
-        console.log(`[API] 尝试第一种Cookie格式...`);
-        
-        // 转发请求到Cursor API - 使用更完整的headers模拟真实浏览器
+        // 转发请求到Cursor API - Cookie中必须是URL编码格式（%3A%3A）
         const response = await fetch('https://www.cursor.com/api/auth/stripe', {
             method: 'GET',
             headers: {
-                'Cookie': cookieFormats[0],
+                'Cookie': `WorkosCursorSessionToken=${cookieToken}`,
                 'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'Accept': 'application/json, text/plain, */*',
                 'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7',
@@ -78,33 +71,6 @@ export default async function handler(req, res) {
             return res.status(200).json(jsonData);
         } else {
             console.log(`[API] ❌ 失败: ${data}`);
-            
-            // 如果失败，尝试第二种Cookie格式
-            if (response.status === 401) {
-                console.log(`[API] 尝试URL编码的Cookie格式...`);
-                const response2 = await fetch('https://www.cursor.com/api/auth/stripe', {
-                    method: 'GET',
-                    headers: {
-                        'Cookie': cookieFormats[1],
-                        'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
-                        'Accept': 'application/json',
-                        'Referer': 'https://www.cursor.com/',
-                        'Origin': 'https://www.cursor.com'
-                    }
-                });
-                
-                const data2 = await response2.text();
-                console.log(`[API] 第二次尝试响应: ${response2.status}`);
-                
-                if (response2.ok) {
-                    const jsonData = JSON.parse(data2);
-                    console.log(`[API] ✅ 第二次成功!`);
-                    return res.status(200).json(jsonData);
-                } else {
-                    console.log(`[API] ❌ 第二次也失败: ${data2}`);
-                }
-            }
-            
             return res.status(response.status).json({ 
                 error: 'Token可能已过期或无效',
                 message: '请确认Token是最新的且尚未过期',

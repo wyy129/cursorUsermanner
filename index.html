@@ -356,12 +356,10 @@
                 let token = item.auth_info?.WorkosCursorSessionToken;
                 if (!token) return;
 
-                // 确保Token已解码
-                if (token.includes('%')) {
-                    token = decodeURIComponent(token);
-                    console.log('[前端] Token已解码');
-                }
-
+                // Token保持原样发送，API函数会处理编码
+                // 如果是URL编码的（%3A%3A）保持原样
+                // 如果是解码的（::）也保持原样，API会编码
+                
                 item.loading = true;
                 try {
                     console.log(`[前端] 发送Token: ${token.substring(0, 50)}...`);
@@ -394,12 +392,7 @@
                 for (let i = 0; i < items.length; i++) {
                     this.progress = `${i + 1}/${items.length}`;
                     const item = items[i];
-                    let token = item.auth_info.WorkosCursorSessionToken;
-                    
-                    // 确保Token已解码
-                    if (token.includes('%')) {
-                        token = decodeURIComponent(token);
-                    }
+                    const token = item.auth_info.WorkosCursorSessionToken;
                     
                     try {
                         const res = await axios.get(this.apiBase, {
