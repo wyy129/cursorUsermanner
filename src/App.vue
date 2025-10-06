@@ -196,10 +196,36 @@ const handleQueryStripe = async (user) => {
       showMessage('❌ 查询失败: ' + result.error, 'error')
       console.error('查询失败详情:', result)
       
-      // 如果是401错误，给出更具体的提示
-      if (result.error.includes('401')) {
-        alert('Token验证失败 (401):\n\n可能原因：\n1. Token已过期\n2. Token格式不正确\n3. 该Token已被撤销\n\n建议：从Cursor应用重新获取Token')
+      // 显示详细的错误信息
+      let errorMessage = `查询失败 (${result.error})\n\n`
+      
+      if (result.details) {
+        errorMessage += '📋 服务器返回:\n'
+        errorMessage += JSON.stringify(result.details, null, 2) + '\n\n'
+        
+        if (result.details.debug) {
+          errorMessage += '🔍 调试信息:\n'
+          errorMessage += `Token前缀: ${result.details.debug.tokenPrefix || 'N/A'}\n`
+          errorMessage += `Token长度: ${result.details.debug.tokenLength || 'N/A'}\n`
+          errorMessage += `完整响应: ${result.details.debug.fullResponse || 'N/A'}\n\n`
+        }
       }
+      
+      if (result.error.includes('401')) {
+        errorMessage += '⚠️ 可能原因：\n'
+        errorMessage += '1. Token已过期或无效\n'
+        errorMessage += '2. Token格式不正确（应以user_开头）\n'
+        errorMessage += '3. 该Token已被撤销\n\n'
+        errorMessage += '💡 解决方法：\n'
+        errorMessage += '从Cursor应用重新获取最新的Token\n\n'
+        errorMessage += '📝 如何获取Token：\n'
+        errorMessage += '1. 打开Cursor应用\n'
+        errorMessage += '2. 按F12打开开发者工具\n'
+        errorMessage += '3. 点击Application/存储\n'
+        errorMessage += '4. 找到Cookies > WorkosCursorSessionToken'
+      }
+      
+      alert(errorMessage)
     }
   } catch (error) {
     showMessage('查询出错: ' + error.message, 'error')
