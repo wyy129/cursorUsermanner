@@ -2,11 +2,20 @@
 // 代理Cursor API请求，解决CORS问题
 
 export default async function handler(req, res) {
-  // 设置CORS头
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Cursor-Token, Content-Type');
+  // 动态设置CORS头（支持credentials）
+  const origin = req.headers.origin || req.headers.referer || '*';
+  
+  // 如果有具体的origin，则设置为该origin（支持credentials）
+  // 否则使用通配符（但此时不能使用credentials）
+  if (origin !== '*') {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Cursor-Token, Content-Type, Authorization');
 
   // 处理OPTIONS预检请求
   if (req.method === 'OPTIONS') {

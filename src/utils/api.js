@@ -44,7 +44,8 @@ export async function queryUserStripeInfo(token) {
         // 通过自定义header传递Token（避免浏览器Cookie限制）
         'X-Cursor-Token': token
       },
-      credentials: 'include'
+      // 生产环境使用include以支持跨域Cookie，开发环境使用same-origin
+      credentials: import.meta.env.DEV ? 'same-origin' : 'include'
     })
     
     console.log('响应状态:', response.status, response.statusText)
