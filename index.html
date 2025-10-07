@@ -1,23 +1,77 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cursor 用户数据管理系统</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor 账号使用情况查询</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.js"></script>
+    <div class="container">
+        <header class="header">
+            <h1>🔍 Cursor 账号查询</h1>
+            <p class="subtitle">在线查询 Cursor 账号使用情况和订阅信息</p>
+        </header>
+
+        <div class="card">
+            <div class="input-section">
+                <label for="token">请输入您的 WorkosCursorSessionToken:</label>
+                <textarea 
+                    id="token" 
+                    placeholder="粘贴完整的 WorkosCursorSessionToken 值..."
+                    rows="4"
+                ></textarea>
+                <div class="button-group">
+                    <button id="queryBtn" class="btn btn-primary">
+                        <span class="btn-text">查询</span>
+                        <span class="loader" style="display: none;"></span>
+                    </button>
+                    <button id="clearBtn" class="btn btn-secondary">清空</button>
+                </div>
+                <div class="help-text">
+                    <p>💡 如何获取 Token:</p>
+                    <ol>
+                        <li>打开浏览器开发者工具 (F12)</li>
+                        <li>访问 <a href="https://cursor.com/cn/dashboard" target="_blank">cursor.com/cn/dashboard</a></li>
+                        <li>在 Network 标签页找到任意请求</li>
+                        <li>复制 Cookie 中的 WorkosCursorSessionToken 值</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div id="results" class="results" style="display: none;">
+            <!-- 账户信息 -->
+            <div class="card result-card">
+                <h2>📊 账户信息</h2>
+                <div id="accountInfo" class="info-grid"></div>
+            </div>
+
+            <!-- 使用统计 -->
+            <div class="card result-card">
+                <h2>📈 使用统计</h2>
+                <div id="usageStats" class="info-grid"></div>
+            </div>
+
+            <!-- 原始数据 -->
+            <div class="card result-card">
+                <h2>📄 原始数据</h2>
+                <details>
+                    <summary>点击展开查看完整 JSON 数据</summary>
+                    <pre id="rawData"></pre>
+                </details>
+            </div>
+        </div>
+
+        <div id="error" class="error-message" style="display: none;"></div>
+
+        <footer class="footer">
+            <p>⚠️ 请妥善保管您的 Token，不要泄露给他人</p>
+            <p>所有查询均通过服务器代理，不会存储您的任何信息</p>
+        </footer>
+    </div>
+
+    <script src="/script.js"></script>
 </body>
 </html>
 

@@ -1,0 +1,17 @@
+# Vercel 忽略文件
+
+# 开发文件
+*.md
+!README.md
+
+# Git
+.git
+.gitignore
+
+# 文档
+DEPLOY.md
+
+# 其他
+*.log
+.DS_Store
+
