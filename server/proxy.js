@@ -1,11 +1,7 @@
-// {{RIPER-6:
-//   Action: "Added"
-//   Task_ID: "#5"
-//   Timestamp: "2025-10-07T00:02:59+08:00"
-//   Authoring_Role: "backend-expert"
-//   Principle_Applied: "后端代理解决 CORS 和重定向问题"
-//   MCP_Tools_Used: ["mcp.server_time"]
-// }}
+/**
+ * Cursor API 代理服务 - 精简版
+ * 参考 Python cursor_account_manager.py 的实现
+ */
 
 import express from 'express'
 import cors from 'cors'
@@ -14,86 +10,133 @@ import fetch from 'node-fetch'
 const app = express()
 const PORT = 3001
 
-// 中间件
 app.use(cors())
 app.use(express.json())
 
 /**
- * 代理接口：查询 Cursor Stripe 信息
+ * 订阅接口 - GET /api/auth/stripe
  */
 app.post('/api/check-stripe', async (req, res) => {
   const { token } = req.body
   
   if (!token) {
-    return res.status(400).json({
-      success: false,
-      error: '缺少 token 参数'
-    })
+    return res.status(400).json({ error: '缺少 token 参数' })
   }
   
   try {
-    console.log('📡 代理请求 Cursor API...')
+    console.log('📡 [订阅接口] Token:', token.substring(0, 15) + '...')
     
-    // 构造请求
     const response = await fetch('https://www.cursor.com/api/auth/stripe', {
       method: 'GET',
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/json, text/plain, */*',
+        'Accept': '*/*',
         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-        'Cookie': `WorkosCursorSessionToken=${token}`,
-        'Referer': 'https://www.cursor.com/',
-        'Origin': 'https://www.cursor.com'
-      },
-      redirect: 'follow' // 自动跟随重定向
+        'Cookie': `WorkosCursorSessionToken=${token}`
+      }
     })
     
-    console.log(`📊 响应状态: ${response.status}`)
+    console.log(`📊 状态码: ${response.status}`)
     
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      const errorText = await response.text()
+      console.error(`❌ 失败: ${response.status} - ${errorText}`)
+      return res.status(response.status).json({ error: `HTTP ${response.status}` })
     }
     
     const data = await response.json()
-    console.log('✅ 查询成功:', data.membershipType)
+    console.log(`✅ 成功: ${data.membershipType}`)
     
-    res.json({
-      success: true,
-      data: data
-    })
+    res.json(data)
   } catch (error) {
-    console.error('❌ 查询失败:', error.message)
-    res.status(500).json({
-      success: false,
-      error: error.message
-    })
+    console.error('❌ 异常:', error.message)
+    res.status(500).json({ error: error.message })
   }
 })
 
 /**
- * 健康检查接口
+ * 用量接口 - POST /api/dashboard/get-aggregated-usage-events
  */
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Cursor API 代理服务运行中' })
+app.post('/api/check-usage', async (req, res) => {
+  const { token } = req.body
+  
+  if (!token) {
+    return res.status(400).json({ error: '缺少 token 参数' })
+  }
+  
+  try {
+    console.log('📡 [用量接口] Token:', token.substring(0, 15) + '...')
+    
+    // 计算时间范围：最近30天（毫秒）
+    const endDate = Date.now()
+    const startDate = endDate - (30 * 24 * 60 * 60 * 1000)
+    
+    const payload = {
+      teamId: -1,
+      startDate: startDate,
+      endDate: endDate
+    }
+    
+    console.log('📅 时间范围:', new Date(startDate).toISOString(), '至', new Date(endDate).toISOString())
+    
+    const response = await fetch('https://cursor.com/api/dashboard/get-aggregated-usage-events', {
+      method: 'POST',
+      headers: {
+        'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'upgrade-insecure-requests': '1',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+        'accept': '*/*',
+        'sec-fetch-site': 'same-origin',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-user': '?1',
+        'sec-fetch-dest': 'empty',
+        'accept-encoding': 'gzip, deflate, br',
+        'accept-language': 'zh-CN,zh;q=0.9',
+        'content-type': 'application/json',
+        'priority': 'u=1, i',
+        'origin': 'https://cursor.com',
+        'referer': 'https://cursor.com/cn/dashboard?tab=usage',
+        'Cookie': `WorkosCursorSessionToken=${token}`
+      },
+      body: JSON.stringify(payload)
+    })
+    
+    console.log(`📊 状态码: ${response.status}`)
+    
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`❌ 失败: ${response.status} - ${errorText}`)
+      return res.status(response.status).json({ error: `HTTP ${response.status}` })
+    }
+    
+    const data = await response.json()
+    const costCents = data.totalCostCents || 0
+    console.log(`✅ 成功: 费用 $${(costCents / 100).toFixed(2)}`)
+    
+    res.json(data)
+  } catch (error) {
+    console.error('❌ 异常:', error.message)
+    res.status(500).json({ error: error.message })
+  }
 })
 
-/**
- * 启动服务器
- */
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', time: new Date().toISOString() })
+})
+
 app.listen(PORT, () => {
   console.log(`
-╔════════════════════════════════════════╗
-║   Cursor API 代理服务已启动 🚀        ║
-║   端口: ${PORT}                          ║
-║   地址: http://localhost:${PORT}        ║
-╚════════════════════════════════════════╝
+╔═══════════════════════════════════════╗
+║  🚀 Cursor API 代理服务已启动         ║
+║  📍 http://localhost:${PORT}            ║
+╚═══════════════════════════════════════╝
 
-可用接口:
-- POST /api/check-stripe  查询 Stripe 信息
-- GET  /health            健康检查
-
-前端配置:
-将 fetchStripeInfoViaBackend 作为主要调用方式
+📡 可用接口:
+   POST /api/check-stripe   - 查询订阅信息
+   POST /api/check-usage    - 查询用量详情
+   GET  /health             - 健康检查
   `)
 })
 
