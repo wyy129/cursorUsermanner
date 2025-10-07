@@ -1,0 +1,45 @@
+## 🚀 立即执行以下命令来修复 404 错误
+
+### 步骤 1：提交更改
+git add .
+git commit -m "修复 404 错误：更新 Vercel 路由配置"
+git push
+
+### 步骤 2：等待自动部署
+推送后，Vercel 会自动重新部署（约 30-60 秒）
+
+### 步骤 3：访问网站
+部署完成后，访问你的 Vercel 网址
+
+---
+
+## ✅ 修复说明
+
+我已经将 vercel.json 改为使用 "routes" 配置：
+
+1. ✅ 将所有请求路由到 index.html（首页）
+2. ✅ 正确映射 style.css 和 script.js
+3. ✅ API 路由保持不变
+
+这是 Vercel 推荐的静态网站配置方式！
+
+---
+
+## 📋 期望的结果
+
+部署成功后，访问网站应该看到：
+
+🔍 Cursor 账号查询
+━━━━━━━━━━━━━━━━━━━━━
+在线查询 Cursor 账号使用情况和订阅信息
+
+[ Token 输入框 ]
+
+[查询]  [清空]
+
+---
+
+如果还是 404，请在 Vercel Dashboard 检查：
+Settings → General → Build & Development Settings
+确保 Build Command 和 Output Directory 都是空的！
+

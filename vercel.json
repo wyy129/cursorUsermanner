@@ -1,27 +1,20 @@
 {
-  "buildCommand": null,
-  "outputDirectory": null,
-  "framework": null,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/style.css",
-      "destination": "/public/style.css"
+      "src": "/style.css",
+      "dest": "/public/style.css"
     },
     {
-      "source": "/script.js",
-      "destination": "/public/script.js"
-    }
-  ],
-  "headers": [
+      "src": "/script.js",
+      "dest": "/public/script.js"
+    },
     {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Credentials", "value": "true" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
-        { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" }
-      ]
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
-
